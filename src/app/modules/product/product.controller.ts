@@ -83,7 +83,6 @@ const updateProduct = async (req: Request, res: Response) => {
         const productData = req.body
         // console.log(productData)
         const result = await ProductServices.updateProduct(productId, productData)
-        console.log(result)
         res.status(200).json({
           success: true,
           message: 'product updated successfully!',
@@ -99,9 +98,44 @@ const updateProduct = async (req: Request, res: Response) => {
     }
   }
 
+  const deleteProduct = async (req: Request, res: Response) => {
+    try {
+        const productId = req.params.productId;
+        const isValidObjectId = mongoose.Types.ObjectId.isValid(productId);
+  
+      if (!isValidObjectId) {
+        res.status(404).json({
+          success: false,
+          message: 'Product not found',
+          error: {
+            code: 404,
+            description: 'Product not found!',
+          },
+        })
+      } else {
+        const result = await ProductServices.deleteProductFromDB(productId)
+        res.status(200).json({
+          success: true,
+          message: 'Product deleted successfully!',
+          data: result,
+        })
+      }
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message,
+        error: {
+          code: 400,
+          description: 'Something went wrong',
+        },
+      })
+    }
+  }
+
 export const ProductControllers = {
   createProduct,
   getAllProducts,
   getSingleProduct,
   updateProduct,
+  deleteProduct,
 };

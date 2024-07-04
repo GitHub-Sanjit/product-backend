@@ -37,9 +37,16 @@ const getSingleProductFromDB = async (_id:string) => {
     return result
   }
 
+  export const deleteProductFromDB = async (productId: string) => {
+    // Convert string to ObjectId
+    await ProductModel.findByIdAndDelete(new mongoose.Types.ObjectId(productId));
+    return null;
+  };
+
 export const ProductServices = {
   createProductIntoDB,
   getAllProductFromDB,
   getSingleProductFromDB,
   updateProduct,
+  deleteProductFromDB,
 };
