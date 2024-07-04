@@ -65,8 +65,43 @@ const getSingleProduct = async (req: Request, res: Response) => {
   }
 };
 
+
+const updateProduct = async (req: Request, res: Response) => {
+    try {
+        const productId = req.params.productId;
+        const isValidObjectId = mongoose.Types.ObjectId.isValid(productId);
+      if (!isValidObjectId) {
+        res.status(404).json({
+          success: false,
+          message: 'product not found',
+          error: {
+            code: 404,
+            description: 'product not found!',
+          },
+        })
+      } else {
+        const productData = req.body
+        // console.log(productData)
+        const result = await ProductServices.updateProduct(productId, productData)
+        console.log(result)
+        res.status(200).json({
+          success: true,
+          message: 'product updated successfully!',
+          data: result,
+        })
+      }
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Something went wrong',
+        error: error,
+      })
+    }
+  }
+
 export const ProductControllers = {
   createProduct,
   getAllProducts,
   getSingleProduct,
+  updateProduct,
 };
