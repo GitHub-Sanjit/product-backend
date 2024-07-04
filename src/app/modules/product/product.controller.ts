@@ -132,10 +132,31 @@ const updateProduct = async (req: Request, res: Response) => {
     }
   }
 
+  const searchProducts = async (req: Request, res: Response) => {
+    try {
+      const searchTerm = req.query.searchTerm?.toString() || '';
+  
+      const results = await ProductServices.searchProductsInDB(searchTerm);
+  
+      res.status(200).json({
+        success: true,
+        message: `Products matching search term '${searchTerm}' fetched successfully!`,
+        data: results,
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Something went wrong',
+        error: error,
+      });
+    }
+  };
+
 export const ProductControllers = {
   createProduct,
   getAllProducts,
   getSingleProduct,
   updateProduct,
   deleteProduct,
+  searchProducts
 };

@@ -43,10 +43,33 @@ const getSingleProductFromDB = async (_id:string) => {
     return null;
   };
 
+  export const searchProductsInDB = async (searchTerm: string) => {
+    const regex = new RegExp(searchTerm, 'i'); // 'i' makes it case-insensitive
+  console.log(regex)
+    const results = await ProductModel.find({
+      $or: [
+        { name: regex },
+        { description: regex },
+        { tags: regex },
+      ],
+    }).select({
+      name: 1,
+      description: 1,
+      price: 1,
+      category: 1,
+      tags: 1,
+      variants: 1,
+      inventory: 1,
+    });
+  
+    return results;
+  };
+
 export const ProductServices = {
   createProductIntoDB,
   getAllProductFromDB,
   getSingleProductFromDB,
   updateProduct,
   deleteProductFromDB,
+  searchProductsInDB,
 };
