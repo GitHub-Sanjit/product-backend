@@ -1,3 +1,5 @@
+import mongoose, { Model } from "mongoose";
+
 // Define the structure for a Variant
 export type Variant = {
   type: string; // e.g., "Color"
@@ -20,3 +22,9 @@ export type Product = {
   variants: Variant[]; // List of variants
   inventory: Inventory; // Inventory information
 };
+
+// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+interface ProductModel extends Model<Product> {
+    // eslint-disable-next-line no-unused-vars
+    isProductExist(productId: string | mongoose.Types.ObjectId): Promise<boolean>;
+  }
