@@ -1,10 +1,11 @@
 import mongoose from 'mongoose';
-import { Product } from './product.interface';
-import { ProductModel } from './product.model';
+import { IProduct } from './product.interface';
+import ProductModel from './product.model';
 
-const createProductIntoDB = async (product: Product) => {
-  const result = await ProductModel.create(product);
-  return result;
+
+const createProductIntoDB = async (productData: IProduct) => {
+  const product = new ProductModel(productData);
+  return await product.save();
 };
 
 const getAllProductFromDB = async () => {

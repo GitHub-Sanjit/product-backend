@@ -1,19 +1,32 @@
 import { Request, Response } from 'express';
 import { ProductServices } from './product.service';
 import mongoose from 'mongoose';
+import { productSchema } from './product.schema';
 
 const createProduct = async (req: Request, res: Response) => {
   try {
-    const { product: productData } = req.body;
-    const result = await ProductServices.createProductIntoDB(productData);
+    const validationResult = productSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      return res.status(400).json(validationResult.error);
+    }
+
+    const productData = validationResult.data;
+    const product = await ProductServices.createProductIntoDB(productData);
 
     res.status(200).json({
       success: true,
       message: 'Product created successfully!',
-      data: result,
+      data: product,
     });
-  } catch (error) {
-    console.log(error);
+  } catch (error:any) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+      error: {
+        code: 400,
+        description: 'Failed to Create Product',
+      },
+    });
   }
 };
 
