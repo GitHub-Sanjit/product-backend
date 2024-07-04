@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 import { OrderServices } from './order.service';
 import { orderSchema } from './order.schema';
+import { ProductServices } from '../product/product.service';
 
 const createOrder = async (req: Request, res: Response) => {
   try {
-    // Validate the request body against the order schema
     const validationResult = orderSchema.safeParse(req.body);
     if (!validationResult.success) {
       return res.status(400).json({
@@ -13,11 +13,18 @@ const createOrder = async (req: Request, res: Response) => {
         errors: validationResult.error.errors,
       });
     }
-    // If validation is successful, extract the validated data
+
     const orderData = validationResult.data;
+
+    // Check inventory
+    await ProductServices.checkInventory(orderData.productId, orderData.quantity);
+
     // Create the order in the database
     const createdOrder = await OrderServices.createOrderIntoDB(orderData);
-    // Send a success response with the created order
+
+    // Update inventory
+    await ProductServices.updateInventory(orderData.productId, orderData.quantity);
+
     res.status(200).json({
       success: true,
       message: 'Order created successfully!',
@@ -29,7 +36,12 @@ const createOrder = async (req: Request, res: Response) => {
       },
     });
   } catch (error: any) {
-    // Send an error response if an exception occurs
+    if (error.code === 'INSUFFICIENT_STOCK') {
+      return res.status(400).json({
+        success: false,
+        message: 'Insufficient quantity available in inventory',
+      });
+    }
     res.status(400).json({
       success: false,
       message: error.message || 'Failed to Create Order',
@@ -44,8 +56,6 @@ const createOrder = async (req: Request, res: Response) => {
 const getAllOrders = async (req: Request, res: Response) => {
   try {
     const email = req.query.email as string;
-    console.log(email)
-
     if (email) {
       const orders = await OrderServices.searchOrdersFromDB(email);
       res.status(200).json({

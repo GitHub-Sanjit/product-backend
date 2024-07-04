@@ -2,14 +2,8 @@ import { IOrder } from './order.interface';
 import { OrderModel } from './order.model';
 
 const createOrderIntoDB = async (orderData: IOrder) => {
-  // Create a new order instance
   const order = new OrderModel(orderData);
-
-  // Save the order to the database
-  await order.save();
-
-  // Return the saved order
-  return order;
+  return await order.save();
 };
 
 const getAllOrdersFromDB = async () => {

@@ -57,6 +57,35 @@ const deleteProductFromDB = async (productId: string) => {
     return results;
   };
 
+
+  // Function to check inventory
+  const checkInventory = async (productId: string, orderQuantity: number) => {
+    const product = await ProductModel.findById(productId).exec();
+    if (!product) {
+      throw new Error('Product not found');
+    }
+    if (product.inventory.quantity < orderQuantity) {
+      const error: any = new Error('Insufficient quantity available in inventory');
+      error.code = 'INSUFFICIENT_STOCK';
+      throw error;
+    }
+    return product;
+  };
+
+// Function to update inventory after order creation
+const updateInventory = async (productId: string, orderQuantity: number) => {
+  const product = await ProductModel.findById(productId).exec();
+  if (!product) {
+    throw new Error('Product not found');
+  }
+
+  product.inventory.quantity -= orderQuantity;
+  product.inventory.inStock = product.inventory.quantity > 0;
+
+  await product.save();
+  return product;
+};
+
 export const ProductServices = {
   createProductIntoDB,
   getAllProductsFromDB,
@@ -64,5 +93,7 @@ export const ProductServices = {
   getProductByIdFromDB,
   updateProductIntoDB,
   deleteProductFromDB,
+  checkInventory,
+  updateInventory,
   // searchProductsInDB,
 };
