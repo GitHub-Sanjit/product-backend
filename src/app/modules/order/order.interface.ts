@@ -1,9 +1,8 @@
-import { ObjectId } from "mongoose";
 
 // Defing the structure for Order
-export type Order = {
+export type IOrder = {
     email:string;
-    productId:ObjectId;
+    productId:string;
     price:number;
     quantity:number;
 }

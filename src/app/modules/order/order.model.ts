@@ -1,28 +1,15 @@
-import mongoose, { Schema } from "mongoose";
-import { Order } from "./order.interface";
+import { Schema, model } from 'mongoose';
+import { IOrder } from './order.interface';
 
-// Create the Order schema
-const OrderSchema = new Schema<Order>({
-    email: {
-      type: String,
-      required: true,
-    },
-    productId: {
-      type: mongoose.Types.ObjectId,
-      ref: 'Product',
-      required: true,
-    },
-    price: {
-      type: Number,
-      required: true,
-      min: [0, 'Price cannot be negative'],
-    },
-    quantity: {
-      type: Number,
-      required: true,
-      min: [1, 'Quantity must be at least 1'],
-    }
-  });
-  
-  // Create and export the Order model
-  export const OrderModel = mongoose.model<Order>('Order', OrderSchema);
+const orderSchema = new Schema({
+  email: { type: String, required: true },
+  productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
+  price: { type: Number, required: true },
+  quantity: { type: Number, required: true },
+});
+
+export const OrderModel = model<IOrder>('Order', orderSchema);
+
+// const ProductModel = model<IProduct>('Product', productSchema);
+
+// export default ProductModel;

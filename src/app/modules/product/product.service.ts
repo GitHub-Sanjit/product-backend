@@ -38,7 +38,6 @@ const deleteProductFromDB = async (productId: string) => {
 
   export const searchProductsInDB = async (searchTerm: string) => {
     const regex = new RegExp(searchTerm, 'i'); // 'i' makes it case-insensitive
-  console.log(regex)
     const results = await ProductModel.find({
       $or: [
         { name: regex },
