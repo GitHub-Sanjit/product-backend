@@ -17,13 +17,19 @@ const createOrder = async (req: Request, res: Response) => {
     const orderData = validationResult.data;
 
     // Check inventory
-    await ProductServices.checkInventory(orderData.productId, orderData.quantity);
+    await ProductServices.checkInventory(
+      orderData.productId,
+      orderData.quantity,
+    );
 
     // Create the order in the database
     const createdOrder = await OrderServices.createOrderIntoDB(orderData);
 
     // Update inventory
-    await ProductServices.updateInventory(orderData.productId, orderData.quantity);
+    await ProductServices.updateInventory(
+      orderData.productId,
+      orderData.quantity,
+    );
 
     res.status(200).json({
       success: true,
@@ -58,10 +64,15 @@ const getAllOrders = async (req: Request, res: Response) => {
     const email = req.query.email as string;
     if (email) {
       const orders = await OrderServices.searchOrdersFromDB(email);
+      if (orders.length===0) {
+        const error: any = new Error('Order not found');
+        error.code = 'ORDER_NOT_FOUND';
+        throw error;
+      }
       res.status(200).json({
         success: true,
         message: `Orders fetched successfully for user email`,
-        data: orders.map(order => ({
+        data: orders.map((order) => ({
           email: order.email,
           productId: order.productId,
           price: order.price,
@@ -70,6 +81,11 @@ const getAllOrders = async (req: Request, res: Response) => {
       });
     } else {
       const orders = await OrderServices.getAllOrdersFromDB();
+      if (orders.length===0) {
+        const error: any = new Error('Order not found');
+        error.code = 'ORDER_NOT_FOUND';
+        throw error;
+      }
       res.status(200).json({
         success: true,
         message: 'Orders fetched Successfully',
@@ -77,6 +93,12 @@ const getAllOrders = async (req: Request, res: Response) => {
       });
     }
   } catch (error: any) {
+    if (error.code === 'ORDER_NOT_FOUND') {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found',
+      });
+    }
     res.status(400).json({
       success: false,
       message: error.message || 'Failed to get Orders',

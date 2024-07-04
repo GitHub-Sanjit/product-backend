@@ -8,15 +8,22 @@ const createOrderIntoDB = async (orderData: IOrder) => {
 
 const getAllOrdersFromDB = async () => {
   const orders = await OrderModel.find().exec();
+  if (orders.length===0) {
+    const error: any = new Error('Order not found');
+    error.code = 'ORDER_NOT_FOUND';
+    throw error;
+  }
   return orders;
 };
 
 // Function to search orders in the database based on searchTerm
 const searchOrdersFromDB = async (email: string) => {
   const orders = await OrderModel.find({ email }).exec();
-  // return await OrderModel.find({
-  //   email: { $regex: email, $options: 'i' },
-  // });
+  if (orders.length===0) {
+    const error: any = new Error('Order not found');
+    error.code = 'ORDER_NOT_FOUND';
+    throw error;
+  }
   return orders;
 };
 
