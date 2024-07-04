@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { ProductServices } from './product.service';
-import mongoose from 'mongoose';
 import { productSchema } from './product.schema';
 
 const createProduct = async (req: Request, res: Response) => {
@@ -18,7 +17,7 @@ const createProduct = async (req: Request, res: Response) => {
       message: 'Product created successfully!',
       data: product,
     });
-  } catch (error:any) {
+  } catch (error: any) {
     res.status(400).json({
       success: false,
       message: error.message,
@@ -32,38 +31,22 @@ const createProduct = async (req: Request, res: Response) => {
 
 const getAllProducts = async (req: Request, res: Response) => {
   try {
-    const result = await ProductServices.getAllProductFromDB();
-
-    res.status(200).json({
-      success: true,
-      message: 'Products fetched successfully!',
-      data: result,
-    });
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const getSingleProduct = async (req: Request, res: Response) => {
-  try {
-    const productId = req.params.productId;
-    const isValidObjectId = mongoose.Types.ObjectId.isValid(productId);
-
-    if (!isValidObjectId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid Product ID',
-        error: {
-          code: 400,
-          description: 'Invalid Product ID format.',
-        },
-      });
-    } else {
-      const result = await ProductServices.getSingleProductFromDB(productId);
+    const searchTerm = req.query.searchTerm;
+    if (searchTerm) {
+      const products = await ProductServices.searchProductsFromDB(
+        searchTerm as string,
+      );
       res.status(200).json({
         success: true,
-        message: 'Product fetched successfully!',
-        data: result,
+        message: `Searched Products ${searchTerm} retrieved Successfully`,
+        data: products,
+      });
+    } else {
+      const products = await ProductServices.getAllProductsFromDB();
+      res.status(200).json({
+        success: true,
+        message: 'All Products retrieved Successfully',
+        data: products,
       });
     }
   } catch (error: any) {
@@ -72,104 +55,133 @@ const getSingleProduct = async (req: Request, res: Response) => {
       message: error.message,
       error: {
         code: 400,
-        description: 'Something went wrong',
+        description: 'Failed to get Product',
       },
     });
   }
 };
 
+const getProductById = async (req: Request, res: Response) => {
+  try {
+    const product = await ProductServices.getProductByIdFromDB(
+      req.params.productId,
+    );
 
-const updateProduct = async (req: Request, res: Response) => {
-    try {
-        const productId = req.params.productId;
-        const isValidObjectId = mongoose.Types.ObjectId.isValid(productId);
-      if (!isValidObjectId) {
-        res.status(404).json({
-          success: false,
-          message: 'product not found',
-          error: {
-            code: 404,
-            description: 'product not found!',
-          },
-        })
-      } else {
-        const productData = req.body
-        // console.log(productData)
-        const result = await ProductServices.updateProduct(productId, productData)
-        res.status(200).json({
-          success: true,
-          message: 'product updated successfully!',
-          data: result,
-        })
-      }
-    } catch (error: any) {
-      res.status(500).json({
-        success: false,
-        message: error.message || 'Something went wrong',
-        error: error,
-      })
-    }
-  }
-
-  const deleteProduct = async (req: Request, res: Response) => {
-    try {
-        const productId = req.params.productId;
-        const isValidObjectId = mongoose.Types.ObjectId.isValid(productId);
-  
-      if (!isValidObjectId) {
-        res.status(404).json({
-          success: false,
-          message: 'Product not found',
-          error: {
-            code: 404,
-            description: 'Product not found!',
-          },
-        })
-      } else {
-        const result = await ProductServices.deleteProductFromDB(productId)
-        res.status(200).json({
-          success: true,
-          message: 'Product deleted successfully!',
-          data: result,
-        })
-      }
-    } catch (error: any) {
-      res.status(400).json({
-        success: false,
-        message: error.message,
-        error: {
-          code: 400,
-          description: 'Something went wrong',
-        },
-      })
-    }
-  }
-
-  const searchProducts = async (req: Request, res: Response) => {
-    try {
-      const searchTerm = req.query.searchTerm?.toString() || '';
-  
-      const results = await ProductServices.searchProductsInDB(searchTerm);
-  
+    if (product) {
       res.status(200).json({
         success: true,
-        message: `Products matching search term '${searchTerm}' fetched successfully!`,
-        data: results,
+        message: 'Product fetched Successfully',
+        data: product,
       });
-    } catch (error: any) {
-      res.status(500).json({
+    } else {
+      res.status(200).json({
         success: false,
-        message: error.message || 'Something went wrong',
-        error: error,
+        message: 'Product not ound',
+        data: product,
       });
     }
-  };
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      error: {
+        code: 400,
+        description: 'Failed to get Product',
+      },
+    });
+  }
+};
+
+const updateProduct = async (req: Request, res: Response) => {
+  try {
+    const validationResult = productSchema.partial().safeParse(req.body);
+    if (!validationResult.success) {
+      return res.status(400).json(validationResult.error);
+    }
+
+    const productData = validationResult.data;
+    const product = await ProductServices.updateProductIntoDB(
+      req.params.productId,
+      productData as IProduct,
+    );
+    if (!product) {
+      res.status(200).json({
+        success: true,
+        message: 'Product not found',
+      });
+    } else {
+      res.status(200).json({
+        success: true,
+        message: 'Product updated successfully',
+        data: product,
+      });
+    }
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      error: {
+        code: 400,
+        description: 'Failed to update Product',
+      },
+    });
+  }
+};
+
+const deleteProduct = async (req: Request, res: Response) => {
+  try {
+    const product = await ProductServices.deleteProductFromDB(
+      req.params.productId,
+    );
+    if (!product) {
+      res.status(200).json({
+        success: true,
+        message: 'Product not found',
+      });
+    } else {
+      res.status(200).json({
+        success: true,
+        message: 'Product Deleted successfully',
+        data:null,
+      });
+    }
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      error: {
+        code: 500,
+        description: 'Failed to delete Product',
+      },
+    });
+  }
+};
+
+// const searchProducts = async (req: Request, res: Response) => {
+//   try {
+//     const searchTerm = req.query.searchTerm?.toString() || '';
+
+//     const results = await ProductServices.searchProductsInDB(searchTerm);
+
+//     res.status(200).json({
+//       success: true,
+//       message: `Products matching search term '${searchTerm}' fetched successfully!`,
+//       data: results,
+//     });
+//   } catch (error: any) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message || 'Something went wrong',
+//       error: error,
+//     });
+//   }
+// };
 
 export const ProductControllers = {
   createProduct,
   getAllProducts,
-  getSingleProduct,
+  getProductById,
   updateProduct,
   deleteProduct,
-  searchProducts
+  // searchProducts,
 };

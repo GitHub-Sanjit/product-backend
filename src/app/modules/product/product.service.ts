@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import { IProduct } from './product.interface';
 import ProductModel from './product.model';
 
@@ -8,41 +7,34 @@ const createProductIntoDB = async (productData: IProduct) => {
   return await product.save();
 };
 
-const getAllProductFromDB = async () => {
-  const result = await ProductModel.find();
-  return result;
+const getAllProductsFromDB = async () => {
+  return await ProductModel.find();
 };
 
-const getSingleProductFromDB = async (_id:string) => {
-    const result = await ProductModel.findOne({ _id })
-    return result
-  }
+const searchProductsFromDB = async (searchTerm: string) => {
+  return await ProductModel.find({
+    name: { $regex: searchTerm, $options: 'i' },
+  });
+};
+
+const getProductByIdFromDB = async (productId: string) => {
+  return await ProductModel.findById({ _id: productId });
+};
 
 
-  const updateProduct = async (productId: string, productData: Product) => {
-    console.log(productData)
-    const result = await ProductModel.findOneAndUpdate(
-        { _id: new mongoose.Types.ObjectId(productId) }, // Use _id for querying
-      { $set: productData },
-      { new: true },
-    ).select({
-      _id: 0,
-      name: 1,
-      description : 1,
-      price : 1,
-      category : 1,
-      tags : 1,
-      variants : 1,
-      inventory : 1,
-    })
-    return result
-  }
+const updateProductIntoDB = async (
+  productId: string,
+  productData: IProduct,
+) => {
+  return await ProductModel.findByIdAndUpdate(productId, productData, {
+    new: true,
+  });
+};
 
-  export const deleteProductFromDB = async (productId: string) => {
-    // Convert string to ObjectId
-    await ProductModel.findByIdAndDelete(new mongoose.Types.ObjectId(productId));
-    return null;
-  };
+
+const deleteProductFromDB = async (productId: string) => {
+  return await ProductModel.findByIdAndDelete({ _id: productId });
+};
 
   export const searchProductsInDB = async (searchTerm: string) => {
     const regex = new RegExp(searchTerm, 'i'); // 'i' makes it case-insensitive
@@ -68,9 +60,10 @@ const getSingleProductFromDB = async (_id:string) => {
 
 export const ProductServices = {
   createProductIntoDB,
-  getAllProductFromDB,
-  getSingleProductFromDB,
-  updateProduct,
+  getAllProductsFromDB,
+  searchProductsFromDB,
+  getProductByIdFromDB,
+  updateProductIntoDB,
   deleteProductFromDB,
-  searchProductsInDB,
+  // searchProductsInDB,
 };
