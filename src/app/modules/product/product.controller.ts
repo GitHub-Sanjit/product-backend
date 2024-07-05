@@ -37,6 +37,7 @@ const getAllProducts = async (req: Request, res: Response) => {
       const products = await ProductServices.searchProductsFromDB(
         searchTerm as string,
       );
+      
       res.status(200).json({
         success: true,
         message: `Products matching search term ${searchTerm} fetched successfully!`,
@@ -67,7 +68,6 @@ const getProductById = async (req: Request, res: Response) => {
     const product = await ProductServices.getProductByIdFromDB(
       req.params.productId,
     );
-
     if (product) {
       res.status(200).json({
         success: true,
@@ -78,7 +78,7 @@ const getProductById = async (req: Request, res: Response) => {
       res.status(400).json({
         success: false,
         message: 'Product not ound',
-        data: product,
+        data: null,
       });
     }
   } catch (error: any) {

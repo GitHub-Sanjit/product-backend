@@ -17,6 +17,14 @@ orderSchema.set('toJSON', {
   }
 });
 
+orderSchema.set('toObject', {
+  transform: (doc, ret) => {
+    delete ret._id; // Remove _id from object response
+    delete ret.__v; // Remove __v from object response
+    return ret;
+  }
+});
+
 export const OrderModel = model<IOrder>('Order', orderSchema);
 
 // const ProductModel = model<IProduct>('Product', productSchema);

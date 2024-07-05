@@ -30,6 +30,14 @@ productSchema.set('toJSON', {
   }
 });
 
+productSchema.set('toObject', {
+  transform: (doc, ret) => {
+    delete ret._id; // Remove _id from object response
+    delete ret.__v; // Remove __v from object response
+    return ret;
+  }
+});
+
 const ProductModel = model<IProduct>('Product', productSchema);
 
 export default ProductModel;
