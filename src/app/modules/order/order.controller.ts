@@ -71,7 +71,7 @@ const getAllOrders = async (req: Request, res: Response) => {
       }
       res.status(200).json({
         success: true,
-        message: `Orders fetched successfully for user email`,
+        message: `Orders fetched successfully for user email!`,
         data: orders.map((order) => ({
           email: order.email,
           productId: order.productId,
@@ -88,7 +88,7 @@ const getAllOrders = async (req: Request, res: Response) => {
       }
       res.status(200).json({
         success: true,
-        message: 'Orders fetched Successfully',
+        message: 'Orders fetched successfully!',
         data: orders,
       });
     }

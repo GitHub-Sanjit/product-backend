@@ -4,12 +4,12 @@ import { IProduct } from './product.interface';
 const variantSchema = new Schema({
   type: { type: String, required: true },
   value: { type: String, required: true },
-});
+},{_id:false});
 
 const inventorySchema = new Schema({
   quantity: { type: Number, required: true },
   inStock: { type: Boolean, required: true },
-});
+},{_id:false});
 
 const productSchema = new Schema<IProduct>({
   name: { type: String, required: true },
@@ -19,6 +19,15 @@ const productSchema = new Schema<IProduct>({
   tags: { type: [String], required: true },
   variants: { type: [variantSchema], required: true },
   inventory: { type: inventorySchema, required: true },
+});
+
+// Transform the output to remove the _id field
+productSchema.set('toJSON', {
+  transform: (doc, ret) => {
+    delete ret._id; // Remove _id from JSON response
+    delete ret.__v; // Optionally remove __v if not needed
+    return ret;
+  }
 });
 
 const ProductModel = model<IProduct>('Product', productSchema);

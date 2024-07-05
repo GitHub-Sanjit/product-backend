@@ -39,14 +39,14 @@ const getAllProducts = async (req: Request, res: Response) => {
       );
       res.status(200).json({
         success: true,
-        message: `Searched Products ${searchTerm} retrieved Successfully`,
+        message: `Products matching search term ${searchTerm} fetched successfully!`,
         data: products,
       });
     } else {
       const products = await ProductServices.getAllProductsFromDB();
       res.status(200).json({
         success: true,
-        message: 'All Products retrieved Successfully',
+        message: 'Products fetched successfully',
         data: products,
       });
     }
@@ -71,11 +71,11 @@ const getProductById = async (req: Request, res: Response) => {
     if (product) {
       res.status(200).json({
         success: true,
-        message: 'Product fetched Successfully',
-        data: product,
+        message: 'Product fetched successfully',
+        data: product.toJSON(),
       });
     } else {
-      res.status(200).json({
+      res.status(400).json({
         success: false,
         message: 'Product not ound',
         data: product,
@@ -142,7 +142,7 @@ const deleteProduct = async (req: Request, res: Response) => {
     } else {
       res.status(200).json({
         success: true,
-        message: 'Product Deleted successfully',
+        message: 'Product deleted successfully',
         data:null,
       });
     }

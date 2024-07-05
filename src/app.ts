@@ -14,6 +14,11 @@ app.use(cors());
 app.use('/api/products', ProductRoutes);
 app.use('/api/orders', OrderRoutes);
 
+app.get('/', (req: Request, res: Response) => {
+  res.send({
+    message: 'Welcome to the Ecommerce API Service',
+  });
+});
 
 app.use(notFoundHandler);
 
@@ -23,10 +28,6 @@ app.use((err: any, req: Request, res: Response) => {
     success: false,
     message: 'Internal Server Error',
   });
-});
-
-app.get('/', (req: Request, res: Response) => {
-  res.send(`Server health is good and running well`);
 });
 
 export default app;

@@ -8,6 +8,15 @@ const orderSchema = new Schema({
   quantity: { type: Number, required: true },
 });
 
+// Transform the output to remove the _id field
+orderSchema.set('toJSON', {
+  transform: (doc, ret) => {
+    delete ret._id; // Remove _id from JSON response
+    delete ret.__v; // Optionally remove __v if not needed
+    return ret;
+  }
+});
+
 export const OrderModel = model<IOrder>('Order', orderSchema);
 
 // const ProductModel = model<IProduct>('Product', productSchema);
